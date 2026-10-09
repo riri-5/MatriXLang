@@ -1,0 +1,5 @@
+matrix A = [[1,2,3],[4,5,6]];
+matrix B = [[1,2],[3,4]];
+matrix C = A * B;
+print(C);
+C = C + 1;

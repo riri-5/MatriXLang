@@ -1,0 +1,6 @@
+// Intermediate: Transpose Operation
+// Demonstrates matrix transpose function
+matrix A = [[1,2,3],[4,5,6]];
+matrix B = transpose(A);
+print(B);
+

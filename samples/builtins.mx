@@ -1,0 +1,4 @@
+matrix I = identity(3);
+matrix A = [[1,-2,3],[4,5,-6],[7,8,9]];
+print(A * I);
+print(ones(2,3) * 0.5);

@@ -1,0 +1,310 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 5px;
+}
+
+header p {
+    opacity: 0.9;
+    font-size: 1.1em;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.editor-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.output-panel {
+    margin-top: 15px;
+    min-height: 150px;
+    max-height: 300px;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.examples-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+}
+
+.examples-section label {
+    font-weight: 600;
+    color: #333;
+}
+
+.examples-section select {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.9em;
+    background: white;
+    cursor: pointer;
+}
+
+.examples-section select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.editor-header h2 {
+    color: #333;
+    font-size: 1.5em;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #5568d3;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+#source {
+    width: 100%;
+    height: 400px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    resize: vertical;
+    background: #f8f9fa;
+}
+
+#source:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.panels-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.panel {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 5px;
+}
+
+.panel pre {
+    flex: 1;
+    background: white;
+    padding: 10px;
+    border-radius: 3px;
+    overflow-y: auto;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    min-height: 200px;
+    border: 1px solid #e0e0e0;
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #f0f0f0;
+}
+
+.panel pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.panel pre::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.panel pre::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+.panel pre::-webkit-scrollbar-thumb:hover {
+    background: #5568d3;
+}
+
+#tokensView, #astView, #semanticView, #cppView, #outputView {
+    color: #333;
+}
+
+#outputView {
+    background: #1e1e1e;
+    color: #d4d4d4;
+}
+
+@media (max-width: 1200px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .panels-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.status-success {
+    color: #28a745;
+}
+
+.status-error {
+    color: #dc3545;
+}
+
+.status-info {
+    color: #17a2b8;
+}
+
+
+/* error text must win over the panel's own text color */
+.panel pre.status-error {
+    color: #dc3545;
+}
+
+#outputView.status-error {
+    color: #ff7b72;
+}
+
+.header-links {
+    margin-top: 8px;
+}
+
+.header-links a {
+    color: white;
+    font-weight: 600;
+}
+
+.stage {
+    float: right;
+    font-size: 0.75em;
+    font-weight: normal;
+    color: #667eea;
+}
+
+.hint {
+    margin-top: 6px;
+    font-size: 0.85em;
+    color: #666;
+}
+
+kbd {
+    padding: 1px 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #f0f0f0;
+    font-family: inherit;
+}
+
+#runBtn {
+    padding: 10px 28px;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    .main-content {
+        padding: 12px;
+    }
+
+    .examples-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .stage {
+        display: none;
+    }
+
+    #source {
+        height: 240px;
+    }
+}

@@ -1,0 +1,1 @@
+=Semantic error: Line 3: Matrix multiplication dimension mismatch. Left: 2x3, Right: 2x2 (left cols must equal right rows)

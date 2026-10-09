@@ -1,0 +1,4 @@
+matrix A = [[1,-2],[3,4]];
+print(-A);
+print(-(A - 2 * A));
+print(-3 + 5);

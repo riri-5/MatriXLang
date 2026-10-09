@@ -1,0 +1,3 @@
+matrix A = [[1,2]];
+matrix B = [[1],[2]];
+print(A - B);

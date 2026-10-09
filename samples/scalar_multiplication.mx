@@ -1,0 +1,6 @@
+// Basic: Scalar Multiplication
+// Demonstrates multiplying a matrix by a scalar
+matrix M = [[1,2],[3,4]];
+matrix N = 2 * M;
+print(N);
+

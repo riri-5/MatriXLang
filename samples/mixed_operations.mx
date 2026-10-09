@@ -1,0 +1,7 @@
+// Advanced: Mixed Operations
+// Demonstrates scalar and matrix operations combined
+matrix A = [[1,2],[3,4]];
+matrix B = [[2,1],[1,2]];
+matrix C = 3 * A + B - 1;
+print(C);
+

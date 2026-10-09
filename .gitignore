@@ -1,0 +1,13 @@
+# build outputs (CI rebuilds everything)
+build/
+matrixlang
+*.exe
+web/matrixlang.js
+web/matrixlang.wasm
+output.cpp
+
+# editor / OS
+.vscode/
+.DS_Store
+__MACOSX/
+desktop.ini

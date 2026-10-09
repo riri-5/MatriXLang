@@ -1,0 +1,3 @@
+// a comment
+matrix A = [[1]]; // trailing
+print(A);

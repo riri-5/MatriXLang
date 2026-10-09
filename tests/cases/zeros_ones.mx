@@ -1,0 +1,2 @@
+print(zeros(2,3));
+print(ones(2,2) * 4);

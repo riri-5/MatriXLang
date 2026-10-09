@@ -1,0 +1,2 @@
+matrix A = ones(2,3) * ones(3,4);
+print(A);

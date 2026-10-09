@@ -1,0 +1,4 @@
+matrix R = [[1,2,3]];
+matrix C = transpose(R);
+print(R * C);
+print(C * R);
