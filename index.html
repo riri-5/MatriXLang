@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatriXLang IDE</title>
+    <meta name="description" content="A compiler for a small matrix programming language, written in C++ and running entirely in your browser via WebAssembly.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23667eea'/%3E%3Ctext x='16' y='22' font-size='16' font-family='monospace' text-anchor='middle' fill='white'%3E[M]%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MatriXLang IDE</h1>
+            <p>A matrix programming language compiler written in C++, running entirely in your browser via WebAssembly</p>
+            <p class="header-links"><a href="https://github.com/riri-5/MatriXLang" target="_blank" rel="noopener">Source on GitHub</a></p>
+        </header>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="editor-header">
+                    <h2>Source Code</h2>
+                    <div class="button-group">
+                        <button id="runBtn" disabled>Loading compiler...</button>
+                    </div>
+                </div>
+                <div class="examples-section">
+                    <label for="exampleSelect">Load Example:</label>
+                    <select id="exampleSelect">
+                        <option value="">-- Select an example --</option>
+                        <option value="basic_addition">Basic: Matrix Addition</option>
+                        <option value="scalar_multiplication">Basic: Scalar Multiplication</option>
+                        <option value="matrix_multiplication">Intermediate: Matrix Multiplication</option>
+                        <option value="transpose_operation">Intermediate: Transpose Operation</option>
+                        <option value="builtins">Intermediate: identity / zeros / ones</option>
+                        <option value="complex_expression">Advanced: Complex Expression</option>
+                        <option value="mixed_operations">Advanced: Mixed Operations</option>
+                        <option value="type_error">Error demo: Dimension Mismatch</option>
+                    </select>
+                </div>
+                <textarea id="source" spellcheck="false" placeholder="Enter MatriXLang code here...">matrix A = [[1,2],[3,4]];
+matrix B = [[2,0],[1,2]];
+matrix C = A * B + transpose(A);
+print(C);</textarea>
+                <p class="hint">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run</p>
+
+                <div class="panel output-panel">
+                    <h3>Program Output</h3>
+                    <pre id="outputView"></pre>
+                </div>
+            </div>
+
+            <div class="panels-section">
+                <div class="panel">
+                    <h3>Tokens <span class="stage">1. Lexer</span></h3>
+                    <pre id="tokensView"></pre>
+                </div>
+
+                <div class="panel">
+                    <h3>AST <span class="stage">2. Parser</span></h3>
+                    <pre id="astView"></pre>
+                </div>
+
+                <div class="panel">
+                    <h3>Semantic Analysis <span class="stage">3. Type &amp; dimension checks</span></h3>
+                    <pre id="semanticView"></pre>
+                </div>
+
+                <div class="panel">
+                    <h3>Generated C++ <span class="stage">4. Code generation</span></h3>
+                    <pre id="cppView"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="ide.js"></script>
+</body>
+</html>
