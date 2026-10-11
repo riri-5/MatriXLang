@@ -91,26 +91,37 @@ make web                  # WebAssembly build for the IDE in web/
 cd web && python -m http.server 8000                  # open http://localhost:8000
 ```
 
-## Tests
+## Testing and verification
 
-```bash
-make test                 # 44 cases: 24 programs with hand-checked output + 20 error cases
-make test-differential    # also compiles every program to C++ and checks both backends agree
+The project includes a small compiler-verification setup, all in Python ([`tests/`](tests/)).
+
+### 1. Test suite: `make test`
+[`tests/run_tests.py`](tests/run_tests.py) runs **44 hand-written tests** from [`tests/cases/`](tests/cases/):
+- **24 valid programs**, each with a hand-computed expected output (`.out`): arithmetic, matrix products of different shapes, transpose, negatives, built-ins, reassignment, float and scientific-notation literals.
+- **20 invalid programs**, each with the expected error (`.err`): undefined variables, every kind of shape mismatch, redeclaration, ragged or empty matrices, bad built-in arguments, syntax errors, correct line numbers, and making sure one mistake gives exactly one error.
+
+It writes a pass/fail report to `build/test_report.md` and exits with code 1 if anything fails.
+
+### 2. Differential testing: `make test-differential`
+The same suite, but every valid program is **also compiled to C++, built with Clang and run**. Both backends must print exactly the same thing.
+
+### 3. Fuzzing against NumPy: `make fuzz`
+[`tests/fuzz.py`](tests/fuzz.py) is a random program generator in the spirit of Csmith. Each random program is generated **twice at the same time**: once in MatriXLang and once as Python/NumPy code. That gives three independent answers to compare:
+
+| | must match |
+|---|---|
+| interpreter vs generated C++ | exactly |
+| interpreter vs NumPy (reference) | within 1e-5 relative (print shows 6 significant digits) |
+
+It also feeds the compiler **randomly broken programs** and checks it never crashes: each one must either run or be rejected with a normal error. Failing programs are saved to `build/fuzz/failures/` and a report goes to `build/fuzz_report.md`. The same `--seed` always gives the same programs, so every failure is reproducible.
+
+```
+$ python tests/fuzz.py --programs 300 --mutants 500 --seed 7
+300/300 programs agree (interpreter = C++ = NumPy), 500/500 broken programs handled without a crash
 ```
 
-Each test is a `.mx` file in [`tests/cases/`](tests/cases/) with either the exact expected output (`.out`) or the expected error (`.err`). The error cases cover undefined variables, shape mismatches, redeclaration, ragged matrices, bad built-in arguments, syntax errors and line numbers.
-
-## Fuzzing
-
-[`tests/fuzz.py`](tests/fuzz.py) is a differential fuzzer in the spirit of Csmith. It generates random, well-typed programs (random shapes, nested `+ - * /`, matrix products, transposes, negation, built-ins, long and tiny float literals), runs each one through **both** backends, and flags any disagreement. It also feeds the compiler randomly mutated, mostly invalid programs and checks that it never crashes: every program must either run or be rejected with a clean error.
-
-```bash
-python tests/fuzz.py --programs 300 --mutants 500 --seed 7
-# 300/300 valid programs agree across backends, 500/500 mutants handled without a crash
-```
-
-Bugs it found (both fixed, with regression tests in `tests/cases/float_literals.mx`):
-- **Miscompilation:** the C++ backend printed number literals with 10 fixed decimals, so `0.0000016467947` became `0.0000016468` and results differed from the interpreter. Literals are now written with 17 significant digits, which round-trips any double exactly.
+### Bugs found by fuzzing (fixed, with regression tests)
+- **Miscompilation:** the C++ backend wrote number literals with 10 fixed decimals, so `0.0000016467947` turned into `0.0000016468` and the C++ output differed from the interpreter. Literals are now written with 17 significant digits, which round-trips every double exactly. Regression test: [`tests/cases/float_literals.mx`](tests/cases/float_literals.mx).
 - **Missing scientific notation:** the lexer rejected literals like `9.05e-07`.
 
 ## Benchmark

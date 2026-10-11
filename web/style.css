@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
@@ -133,7 +133,7 @@ button:disabled {
     padding: 15px;
     border: 2px solid #ddd;
     border-radius: 5px;
-    font-family: 'Courier New', monospace;
+    font-family: 'Fira Code', 'Courier New', monospace;
     font-size: 14px;
     resize: vertical;
     background: #f8f9fa;
@@ -175,7 +175,7 @@ button:disabled {
     border-radius: 3px;
     overflow-y: auto;
     overflow-x: auto;
-    font-family: 'Courier New', monospace;
+    font-family: 'Fira Code', 'Courier New', monospace;
     font-size: 12px;
     white-space: pre-wrap;
     word-wrap: break-word;

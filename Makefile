@@ -26,12 +26,18 @@ web/matrixlang.js: $(CORE) src/wasm_api.cpp
 		-sEXPORTED_FUNCTIONS=_mx_process -sEXPORTED_RUNTIME_METHODS=ccall \
 		-sENVIRONMENT=web,node -o $@
 
+PYTHON ?= python3
+
 test: cli
-	node tests/run_tests.mjs
+	$(PYTHON) tests/run_tests.py
 
 # Also checks that the generated C++ prints exactly what the interpreter prints
 test-differential: cli
-	node tests/run_tests.mjs --differential
+	$(PYTHON) tests/run_tests.py --differential
+
+# Random programs checked three ways: interpreter, generated C++ and NumPy (needs numpy)
+fuzz: cli
+	$(PYTHON) tests/fuzz.py --programs 300 --mutants 500 --seed 7
 
 bench: web
 	node bench/bench.mjs
@@ -39,4 +45,4 @@ bench: web
 clean:
 	rm -rf $(OUT) build web/matrixlang.js web/matrixlang.wasm
 
-.PHONY: all cli web test test-differential bench clean
+.PHONY: all cli web test test-differential fuzz bench clean

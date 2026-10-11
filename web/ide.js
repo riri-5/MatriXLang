@@ -1,12 +1,20 @@
-// MatriXLang IDE client-side JavaScript
-// The whole compiler (lexer, parser, semantic analyzer, C++ code generator and
-// interpreter) is C++ compiled to WebAssembly, so nothing runs on a server.
+// MatriXLang IDE
+// the whole compiler (lexer, parser, semantic analysis, C++ codegen, interpreter)
+// is written in C++ and compiled to WebAssembly, so everything runs in the browser
+// no server needed :)
 
 import createCompiler from "./matrixlang.js";
 
-const MODE = { TOKENS: 0, AST: 1, ANALYZE: 2, CPP: 3, RUN: 4 };
+// these numbers must match the Mode enum in include/driver.hpp
+const MODE = {
+    TOKENS: 0,
+    AST: 1,
+    ANALYZE: 2,
+    CPP: 3,
+    RUN: 4,
+};
 
-// DOM elements
+// grab all the elements we need
 const sourceEl = document.getElementById("source");
 const tokensView = document.getElementById("tokensView");
 const astView = document.getElementById("astView");
@@ -16,107 +24,119 @@ const outputView = document.getElementById("outputView");
 const runBtn = document.getElementById("runBtn");
 const exampleSelect = document.getElementById("exampleSelect");
 
-let compiler = null;
+let compiler = null; // the wasm module, set once it finishes loading
 
-function compile(source, mode) {
+// calls mx_process() from src/wasm_api.cpp
+// it returns a JSON string like {"ok": true, "output": "...", "errors": "..."}
+const compile = (source, mode) => {
     const json = compiler.ccall("mx_process", "string", ["string", "number"], [source, mode]);
     return JSON.parse(json);
-}
+};
 
-function show(view, text, isError) {
+// put text in a panel, and make it red if it's an error
+const show = (view, text, isError = false) => {
     view.textContent = text;
-    view.classList.toggle("status-error", Boolean(isError));
-}
+    view.classList.toggle("status-error", isError);
+};
 
-// Run every compiler stage and fill each panel
-function handleRun() {
+const handleRun = () => {
     const source = sourceEl.value;
+
     if (!source.trim()) {
-        show(outputView, "Please enter some MatriXLang code", true);
+        show(outputView, "write some MatriXLang code first", true);
         return;
     }
 
-    const t0 = performance.now();
+    const startTime = performance.now();
 
+    // step 1: lexer
     const tokens = compile(source, MODE.TOKENS);
-    show(tokensView, tokens.ok ? tokens.output : tokens.output + tokens.errors, !tokens.ok);
+    show(tokensView, tokens.output + tokens.errors, !tokens.ok);
 
+    // step 2: parser
     const ast = compile(source, MODE.AST);
     show(astView, ast.ok ? ast.output : ast.errors, !ast.ok);
 
+    // step 3: semantic analysis (types + matrix shapes)
     const semantic = compile(source, MODE.ANALYZE);
     show(semanticView, semantic.ok ? semantic.output : semantic.errors, !semantic.ok);
 
+    // step 4: C++ code generation
     const cpp = compile(source, MODE.CPP);
-    show(cppView, cpp.ok ? cpp.output : "Fix the errors above to see the generated C++", !cpp.ok);
+    show(cppView, cpp.ok ? cpp.output : "fix the errors above to see the generated C++", !cpp.ok);
 
-    const run = compile(source, MODE.RUN);
-    const elapsed = (performance.now() - t0).toFixed(1);
-    if (run.ok) {
-        const output = run.output || "(program printed nothing)";
-        show(outputView, output + `\n-- compiled and ran in ${elapsed} ms (WebAssembly)`, false);
+    // step 5: actually run it
+    const result = compile(source, MODE.RUN);
+    const timeTaken = (performance.now() - startTime).toFixed(1);
+
+    if (result.ok) {
+        const output = result.output || "(program didn't print anything)";
+        show(outputView, `${output}\n-- compiled and ran in ${timeTaken} ms (WebAssembly)`);
     } else {
-        show(outputView, run.errors, true);
+        show(outputView, result.errors, true);
     }
-}
+};
 
-// Example programs
+// example programs for the dropdown
 const examples = {
     basic_addition: `// Basic: Matrix Addition
-// Demonstrates simple matrix addition operation
 matrix A = [[1,2],[3,4]];
 matrix B = [[5,6],[7,8]];
 matrix C = A + B;
 print(C);`,
+
     scalar_multiplication: `// Basic: Scalar Multiplication
-// Demonstrates multiplying a matrix by a scalar
 matrix M = [[1,2],[3,4]];
 matrix N = 2 * M;
 print(N);`,
-    matrix_multiplication: `// Intermediate: Matrix Multiplication
-// Demonstrates matrix multiplication (not element-wise)
+
+    matrix_multiplication: `// Intermediate: Matrix Multiplication (not element-wise)
 matrix A = [[1,2],[3,4]];
 matrix B = [[2,0],[1,2]];
 matrix C = A * B;
 print(C);`,
-    transpose_operation: `// Intermediate: Transpose Operation
-// Demonstrates matrix transpose function
+
+    transpose_operation: `// Intermediate: Transpose
 matrix A = [[1,2,3],[4,5,6]];
 matrix B = transpose(A);
 print(B);`,
-    builtins: `// Intermediate: Built-in matrices
-// identity(n), zeros(rows, cols) and ones(rows, cols)
+
+    builtins: `// Intermediate: identity(n), zeros(rows, cols), ones(rows, cols)
 matrix I = identity(3);
 matrix A = [[1,-2,3],[4,5,-6],[7,8,9]];
 print(A * I);
 print(ones(2,3) * 0.5);`,
-    complex_expression: `// Advanced: Complex Expression
-// Demonstrates multiple operations: multiplication, transpose, and addition
+
+    complex_expression: `// Advanced: multiply, transpose and add together
 matrix A = [[1,2],[3,4]];
 matrix B = [[2,0],[1,2]];
 matrix C = A * B + transpose(A);
 print(C);`,
-    mixed_operations: `// Advanced: Mixed Operations
-// Demonstrates scalar and matrix operations combined
+
+    mixed_operations: `// Advanced: scalars and matrices mixed
 matrix A = [[1,2],[3,4]];
 matrix B = [[2,1],[1,2]];
 matrix C = 3 * A + B - 1;
 print(-C);`,
-    type_error: `// Error demo: the compiler catches shape errors before running
+
+    type_error: `// Error demo: the compiler catches shape errors before running anything
 matrix A = [[1,2,3],[4,5,6]];   // 2x3
 matrix B = [[1,2],[3,4]];       // 2x2
-matrix C = A * B;               // 3 columns vs 2 rows
-print(C);`
+matrix C = A * B;               // 3 columns but 2 rows -> error
+print(C);`,
 };
 
-// Event listeners
+// buttons + shortcuts
 runBtn.addEventListener("click", handleRun);
+
+// ctrl + enter (or cmd + enter on mac) runs the code
 sourceEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         if (compiler) handleRun();
     }
 });
+
 exampleSelect.addEventListener("change", () => {
     const selected = exampleSelect.value;
     if (selected && examples[selected]) {
@@ -125,18 +145,23 @@ exampleSelect.addEventListener("change", () => {
     }
 });
 
-// Initialize UI
-tokensView.textContent = "Tokens will appear here";
-astView.textContent = "AST will appear here";
-semanticView.textContent = "Semantic analysis results will appear here";
-cppView.textContent = "Generated C++ will appear here";
-outputView.textContent = "Loading the compiler (WebAssembly)...";
+// placeholder text until the compiler is ready
+tokensView.textContent = "tokens will show up here";
+astView.textContent = "AST will show up here";
+semanticView.textContent = "semantic analysis results will show up here";
+cppView.textContent = "generated C++ will show up here";
+outputView.textContent = "loading the compiler (WebAssembly)...";
 
-createCompiler().then((module) => {
-    compiler = module;
-    runBtn.disabled = false;
-    runBtn.textContent = "Run ▶";
-    handleRun();
-}).catch((error) => {
-    show(outputView, "Could not load the compiler: " + error.message, true);
-});
+// load the wasm compiler, then run the default program once
+const init = async () => {
+    try {
+        compiler = await createCompiler();
+        runBtn.disabled = false;
+        runBtn.textContent = "Run ▶";
+        handleRun();
+    } catch (error) {
+        show(outputView, "could not load the compiler: " + error.message, true);
+    }
+};
+
+init();
