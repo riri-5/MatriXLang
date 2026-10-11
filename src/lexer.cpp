@@ -74,7 +74,17 @@ Token Lexer::scanNumber() {
         }
         advance();
     }
-    
+
+    // Optional exponent: 1e5, 2.5E-3, 4e+2
+    if ((current() == 'e' || current() == 'E') &&
+        (std::isdigit(peek()) || ((peek() == '+' || peek() == '-') && std::isdigit(peek(2))))) {
+        advance();
+        if (current() == '+' || current() == '-') advance();
+        while (pos < source.length() && std::isdigit(current())) {
+            advance();
+        }
+    }
+
     std::string value = source.substr(start, pos - start);
     return Token(TokenType::NUMBER, value, startLine, startCol);
 }

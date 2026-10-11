@@ -94,11 +94,24 @@ cd web && python -m http.server 8000                  # open http://localhost:80
 ## Tests
 
 ```bash
-make test                 # 43 cases: 23 programs with hand-checked output + 20 error cases
+make test                 # 44 cases: 24 programs with hand-checked output + 20 error cases
 make test-differential    # also compiles every program to C++ and checks both backends agree
 ```
 
 Each test is a `.mx` file in [`tests/cases/`](tests/cases/) with either the exact expected output (`.out`) or the expected error (`.err`). The error cases cover undefined variables, shape mismatches, redeclaration, ragged matrices, bad built-in arguments, syntax errors and line numbers.
+
+## Fuzzing
+
+[`tests/fuzz.py`](tests/fuzz.py) is a differential fuzzer in the spirit of Csmith. It generates random, well-typed programs (random shapes, nested `+ - * /`, matrix products, transposes, negation, built-ins, long and tiny float literals), runs each one through **both** backends, and flags any disagreement. It also feeds the compiler randomly mutated, mostly invalid programs and checks that it never crashes: every program must either run or be rejected with a clean error.
+
+```bash
+python tests/fuzz.py --programs 300 --mutants 500 --seed 7
+# 300/300 valid programs agree across backends, 500/500 mutants handled without a crash
+```
+
+Bugs it found (both fixed, with regression tests in `tests/cases/float_literals.mx`):
+- **Miscompilation:** the C++ backend printed number literals with 10 fixed decimals, so `0.0000016467947` became `0.0000016468` and results differed from the interpreter. Literals are now written with 17 significant digits, which round-trips any double exactly.
+- **Missing scientific notation:** the lexer rejected literals like `9.05e-07`.
 
 ## Benchmark
 

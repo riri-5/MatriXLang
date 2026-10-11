@@ -2,6 +2,19 @@
 #include <iomanip>
 #include <sstream>
 
+// Writes a double as a C++ literal that parses back to exactly the same value.
+// 17 significant digits round-trip any double, and the literal always contains
+// '.' or an exponent so it stays a double (5 / 2 must not become integer division).
+static std::string doubleLiteral(double value) {
+    std::ostringstream os;
+    os << std::setprecision(17) << value;
+    std::string text = os.str();
+    if (text.find_first_of(".eE") == std::string::npos) {
+        text += ".0";
+    }
+    return text;
+}
+
 std::string CodeGenerator::generate(std::unique_ptr<Program>& program) {
     output.str("");
     output.clear();
@@ -296,7 +309,7 @@ bool CodeGenerator::isScalarExpression(Expression* expr) {
 
 void CodeGenerator::generateExpression(Expression* expr) {
     if (auto* num = dynamic_cast<NumberLiteral*>(expr)) {
-        output << std::fixed << std::setprecision(10) << num->value;
+        output << doubleLiteral(num->value);
     } else if (auto* id = dynamic_cast<Identifier*>(expr)) {
         output << sanitizeIdentifier(id->name);
     } else if (auto* matrix = dynamic_cast<MatrixLiteral*>(expr)) {
@@ -324,7 +337,7 @@ void CodeGenerator::generateMatrixLiteral(MatrixLiteral* matrix) {
     for (size_t i = 0; i < matrix->values.size(); ++i) {
         output << "std::vector<double>{";
         for (size_t j = 0; j < matrix->values[i].size(); ++j) {
-            output << std::fixed << std::setprecision(10) << matrix->values[i][j];
+            output << doubleLiteral(matrix->values[i][j]);
             if (j < matrix->values[i].size() - 1) output << ", ";
         }
         output << "}";
